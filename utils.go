@@ -7,10 +7,13 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+    "time"
+    "fmt"
 )
 
 var (
 	separator string
+    SHANGHAI, _ = time.LoadLocation("Asia/Shanghai")
 )
 
 //PathSeparator 返回系统路径分隔符
@@ -78,4 +81,47 @@ func getParams(t reflect.Type, v reflect.Value) url.Values {
 		}
 	}
 	return params
+}
+
+type Time struct {
+	time.Time
+}
+
+func (t Time) MarshalText() ([]byte, error) {
+	return []byte(t.Format("2006-01-02 15:04:05")), nil
+}
+
+func (t *Time) UnmarshalText(str []byte) error {
+	tt, err := time.Parse("2006-01-02 15:04:05", string(str))
+	if err != nil {
+		return err
+	}
+	*t = Time{tt}
+	return nil
+}
+
+func (t Time) String() string {
+	return t.Format("2006-01-02 15:04:05")
+}
+
+func Now() Time {
+	return Time{time.Now().Local().In(SHANGHAI)}
+}
+
+// 字节的单位转换 保留两位小数
+func FormatSize(fileSize int64) (size string) {
+	if fileSize < 1024 {
+		//return strconv.FormatInt(fileSize, 10) + "B"
+		return fmt.Sprintf("%.2fB", float64(fileSize)/float64(1))
+	} else if fileSize < (1024 * 1024) {
+		return fmt.Sprintf("%.2fKB", float64(fileSize)/float64(1024))
+	} else if fileSize < (1024 * 1024 * 1024) {
+		return fmt.Sprintf("%.2fMB", float64(fileSize)/float64(1024*1024))
+	} else if fileSize < (1024 * 1024 * 1024 * 1024) {
+		return fmt.Sprintf("%.2fGB", float64(fileSize)/float64(1024*1024*1024))
+	} else if fileSize < (1024 * 1024 * 1024 * 1024 * 1024) {
+		return fmt.Sprintf("%.2fTB", float64(fileSize)/float64(1024*1024*1024*1024))
+	} else { //if fileSize < (1024 * 1024 * 1024 * 1024 * 1024 * 1024)
+		return fmt.Sprintf("%.2fEB", float64(fileSize)/float64(1024*1024*1024*1024*1024))
+	}
 }
