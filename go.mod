@@ -1,4 +1,4 @@
-module sysutils
+module github.com/imshuai/sysutils
 
 go 1.19
 
